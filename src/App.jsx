@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Link, NavLink, Route, Routes,
   useParams, useSearchParams
@@ -128,24 +128,20 @@ function ProductCard({ product }) {
 function Catalog() {
   usePageTitle("Katalog Produk");
   const [params, setParams] = useSearchParams();
-  const [category, setCategory] = useState("Semua");
   const q = params.get("q") ?? "";
-  
+  const category = params.get("category") ?? "Semua";
+
   const filtered = PRODUCTS.filter(product => {
-  const cocokNama = product.name
-    .toLowerCase()
-    .includes(q.toLowerCase());
+    const cocokNama = product.name.toLowerCase().includes(q.toLowerCase());
+    const cocokKategori =
+      category === "Semua" || product.category === category;
+    return cocokNama && cocokKategori;
+  });
 
-  const cocokKategori =
-    category === "Semua" || product.category === category;
-
-  return cocokNama && cocokKategori;
-});
-
-  function updateQuery(value, replace = true) {
+  function updateParam(key, value, replace = true) {
     const next = new URLSearchParams(params);
-    if (value) next.set("q", value);
-    else next.delete("q");
+    if (value && value !== "Semua") next.set(key, value);
+    else next.delete(key);
     setParams(next, { replace });
   }
 
@@ -154,12 +150,12 @@ function Catalog() {
       <h2>Produk</h2>
       <label htmlFor="search">Cari produk</label>
       <input id="search" value={q}
-       onChange={event => updateParam("q", event.target.value)}
+        onChange={event => updateParam("q", event.target.value)}
         placeholder="Contoh Buku" />
       <button type="button"
-        onClick={() => updateQuery("", false)}>
+        onClick={() => updateParam("q", "", false)}>
         Reset pencarian
-    </button>
+      </button>
 
       <label htmlFor="category">Pilih kategori</label>
       <select id="category" value={category}
